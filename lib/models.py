@@ -18,7 +18,10 @@ class Game(Base):
     genre = Column(String())
     platform = Column(String())
     price = Column(Integer())
+    created_at = Column(DateTime(), server_default=func.now())
+    updated_at = Column(DateTime(), onupdate=func.now())
 
+    users = relationship('User', secondary=game_user, back_populates='games')
     reviews = relationship('Review', backref=backref('game'))
 
     def __repr__(self):
@@ -26,14 +29,33 @@ class Game(Base):
             f'title={self.title}, ' + \
             f'platform={self.platform})'
 
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer(), primary_key=True)
+    name = Column(String())
+    created_at = Column(DateTime(), server_default=func.now())
+    updated_at = Column(DateTime(), onupdate=func.now())
+
+    games = relationship('Game', secondary=game_user, back_populates='users')
+    reviews = relationship('Review', backref=backref('user'))
+
+    def __repr__(self):
+        return f'User(id={self.id}, ' + \
+            f'name={self.name})'
+    
 class Review(Base):
     __tablename__ = 'reviews'
 
     id = Column(Integer(), primary_key=True)
     score = Column(Integer())
     comment = Column(String())
+    created_at = Column(DateTime(), server_default=func.now())
+    updated_at = Column(DateTime(), onupdate=func.now())
+
     
     game_id = Column(Integer(), ForeignKey('games.id'))
+    user_id = Column(Integer(), ForeignKey('users.id'))
 
     def __repr__(self):
         return f'Review(id={self.id}, ' + \
